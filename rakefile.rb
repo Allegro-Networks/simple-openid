@@ -11,7 +11,7 @@ task :node_dependencies do
 end
 
 task :test do 
-	sh 'mocha ./tests --colors --reporter nyan'
+	sh 'mocha ./tests --ui qunit --colors --reporter nyan'
 end
 
 task :git => :ruby_dependencies do 
