@@ -2,28 +2,30 @@ var assert = require('assert');
 
 suite('Authenticate Tests');
 
-test('Jimmy', function(){
-  
-  assert.equal(true, true);
-});
-
-test('Creates a new openid provider', function(){
-	var openIdProviderConnectionCreated = false,
+test('Creates a new openid provider on each authentication attempt', function(){
+	var openIdConnectionsCreated = 0,
+		authenticationAttempts = 2,
+		authenticationAttemptsCount = 0,
 		mockOpenIdProviderConnectionFactory = {
 			create : function(){
-				openIdProviderConnectionCreated = true;
+				openIdConnectionsCreated++;
 			}
 		};	
 	var openIdProvider = new OpenIdProvider(mockOpenIdProviderConnectionFactory);
-	openIdProvider.authenticate();
-	assert.equal(openIdProviderConnectionCreated, true);
+	for(authenticationAttemptsCount;authenticationAttemptsCount < authenticationAttempts; authenticationAttemptsCount++){
+		openIdProvider.authenticate();
+	}
+	assert.equal(openIdConnectionsCreated, authenticationAttempts);
 });
 
 
+
 var OpenIdProvider = function(openIdProviderFactory){
-	openIdProviderFactory.create();
+	function authenticate(){
+		openIdProviderFactory.create();
+	}
 	return{
-		authenticate: function(){}
+		authenticate: authenticate
 	};
 };
 // module.exports.Bob = function(){
