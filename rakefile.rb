@@ -1,4 +1,4 @@
-task :default => [:dependencies, :git]
+task :default => [:dependencies, :test, :git]
 
 multitask :dependencies => [:node_dependencies, :ruby_dependencies]
 
@@ -8,6 +8,10 @@ end
 
 task :node_dependencies do
 	sh 'npm install'
+end
+
+task :test do 
+	sh 'mocha ./tests --colors --reporter nyan'
 end
 
 task :git => :ruby_dependencies do 
