@@ -92,6 +92,20 @@ test('No authentication uri is generated, Then error raised', function(){
 	);
 });
 
+test('Error returned from generation of uri, Then error is raised', function(){
+	var error = "something bad has happened",
+		uri = "aUri",		
+		fakeRelyingParty = new FakeRelyingParty(uri, error),
+		fakeRelyingPartyFactory = new FakeRelyingPartyFactory(fakeRelyingParty);
+	var openIdAuthenticationUriFactory = new OpenIdAuthenticationUriFactory(fakeRelyingPartyFactory);
+	assert.throws(
+		function(){
+			openIdAuthenticationUriFactory.create({}, function(){});					
+		},
+		/something bad has happened/
+	);
+});
+
 var FakeRelyingPartyFactory = function(mockOpenIdConnection) {
 	function create(){
 		return mockOpenIdConnection;
@@ -101,9 +115,9 @@ var FakeRelyingPartyFactory = function(mockOpenIdConnection) {
 	};
 };
 
-var FakeRelyingParty = function(returnUri){
+var FakeRelyingParty = function(returnUri, error){
 	function authenticate(endpoint, immediate, callback){
-		callback(undefined, returnUri);
+		callback(error, returnUri);
 	}
 	return {
 		authenticate : authenticate
@@ -115,23 +129,30 @@ var fakeOpenIdProvider = {
 };
 
 var OpenIdAuthenticationUriFactory = function(relyingPartyFactory){
-	IMMEDIATELY_AUTHENTICATE = false;
+	var IMMEDIATELY_AUTHENTICATE = false,
+		NO_AUTHENTICATION_URI_GENERATED_ERROR_MESSAGE = "Authentication uri not created by openid";
+	
 	function create(options, callback){
 		var relyingParty = relyingPartyFactory.create({
 			authenticationSuccessRedirectUri: options.authenticationSuccessRedirectUri
 		});
 		
 		relyingParty.authenticate(options.authenticationEndpoint, IMMEDIATELY_AUTHENTICATE, 
-			function(error, openIdAuthenticationUri){
-				if (!openIdAuthenticationUri){
-					throw new Error("Authentication uri not created by openid");
-				}
+			function(uriGenerationErrors, openIdAuthenticationUri){
+				checkForError(openIdAuthenticationUri, uriGenerationErrors);
 				callback(openIdAuthenticationUri);
 			}
 		);
 	}
 
-
+	function checkForError(openIdAuthenticationUri, uriGenerationErrors){
+		if (uriGenerationErrors){
+			throw new Error(uriGenerationErrors);
+		}		
+		if (!openIdAuthenticationUri){
+			throw new Error(NO_AUTHENTICATION_URI_GENERATED_ERROR_MESSAGE);
+		}		
+	}
 
 	return{
 		create: create
