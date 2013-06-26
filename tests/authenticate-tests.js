@@ -79,6 +79,19 @@ test('Generation of authentication uri successful, callback triggered with open 
 	});
 });
 
+test('No authentication uri is generated, Then error raised', function(){
+	var uri,
+		fakeRelyingParty = new FakeRelyingParty(uri),
+		fakeRelyingPartyFactory = new FakeRelyingPartyFactory(fakeRelyingParty);
+	var openIdAuthenticationUriFactory = new OpenIdAuthenticationUriFactory(fakeRelyingPartyFactory);
+	assert.throws(
+		function(){
+			openIdAuthenticationUriFactory.create({}, function(){});					
+		}, 
+		/Authentication uri not created by openid/
+	);
+});
+
 var FakeRelyingPartyFactory = function(mockOpenIdConnection) {
 	function create(){
 		return mockOpenIdConnection;
@@ -107,10 +120,18 @@ var OpenIdAuthenticationUriFactory = function(relyingPartyFactory){
 		var relyingParty = relyingPartyFactory.create({
 			authenticationSuccessRedirectUri: options.authenticationSuccessRedirectUri
 		});
-		relyingParty.authenticate(options.authenticationEndpoint, IMMEDIATELY_AUTHENTICATE, function(error, openIdAuthenticationUri){
-			callback(openIdAuthenticationUri);
-		});
+		
+		relyingParty.authenticate(options.authenticationEndpoint, IMMEDIATELY_AUTHENTICATE, 
+			function(error, openIdAuthenticationUri){
+				if (!openIdAuthenticationUri){
+					throw new Error("Authentication uri not created by openid");
+				}
+				callback(openIdAuthenticationUri);
+			}
+		);
 	}
+
+
 
 	return{
 		create: create
