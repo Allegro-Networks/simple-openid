@@ -1,4 +1,4 @@
-task :default => [:dependencies, :test, :git]
+task :default => [:dependencies, :jshint, :test, :git]
 
 multitask :dependencies => [:node_dependencies, :ruby_dependencies]
 
@@ -8,6 +8,10 @@ end
 
 task :node_dependencies do
 	sh 'npm install'
+end
+
+task :jshint do
+	sh 'jshint ./tests'
 end
 
 task :test do 

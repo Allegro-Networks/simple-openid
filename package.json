@@ -10,7 +10,8 @@
     "openid": "*"   
   },
   "devDependencies": {   
-    "mocha": "*"
+    "mocha": "*",
+    "jshint": "*"
   },
   "engines": {
     "node": "0.10.x"

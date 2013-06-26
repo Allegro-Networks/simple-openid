@@ -27,7 +27,7 @@ test('Creates an openId provider with correct authentciation success redirect ur
 				providerAuthenticationSuccessRedirectUri = options.authenticationSuccessRedirectUri;
 				return fakeOpenIdProvider;
 			}
-		}
+		};
 	var openIdProvider = new OpenIdProvider(mockOpenIdProviderConnectionFactory);
 	openIdProvider.authenticate({
 		authenticationSuccessRedirectUri: authenticationSuccessRedirectUri
