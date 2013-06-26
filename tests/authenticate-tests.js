@@ -1,5 +1,5 @@
 var assert = require('assert'),
-	OpenIdAuthenticationUriFactory = require('../src/OpenIdAuthenticationUriFactory');
+	OpenIdAuthenticationUriFactory = require('../lib/OpenIdAuthenticationUriFactory');
 
 suite('Authenticate Tests');
 
@@ -11,6 +11,7 @@ test('Creates a new openid provider on each create of openid authentication uri'
 			create : function(){
 				relyingPartiesCreated++;
 				return fakeOpenIdProvider;
+		
 			}
 		};	
 	var openIdAuthenticationUriFactory = new OpenIdAuthenticationUriFactory(mockRelyingPartyFactory);
