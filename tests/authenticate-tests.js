@@ -51,6 +51,21 @@ test('Authenticates to openid provider endpoint', function(){
 	assert.equal(openIdAuthenticationEndpoint, endpoint);
 });
 
+test('Authentication does not take place immediately',function(){
+	var openIdAuthenticatedImmediately,
+		authenticateImmediately = false,
+		mockOpenIdConnection ={
+			authenticate : function(authenticateEndpoint, authenticateImmediately){
+				openIdAuthenticatedImmediately = authenticateImmediately;
+			}
+		},
+		fakeOpenIdProviderConnectionFactory = new FakeOpenIdProviderConnectionFactory(mockOpenIdConnection);
+
+	var openIdProvider = new OpenIdProvider(fakeOpenIdProviderConnectionFactory,"");
+	openIdProvider.authenticate({});
+	assert.equal(openIdAuthenticatedImmediately,authenticateImmediately);
+});
+
 var FakeOpenIdProviderConnectionFactory = function(mockOpenIdConnection) {
 	function create(){
 		return mockOpenIdConnection;
@@ -65,11 +80,12 @@ var fakeOpenIdProvider = {
 };
 
 var OpenIdProvider = function(openIdProviderFactory,authenticationEndpoint){
+	IMMEDIATELY_AUTHENTICATE = false;
 	function authenticate(options){
 		var openIdProvider = openIdProviderFactory.create({
 			authenticationSuccessRedirectUri: options.authenticationSuccessRedirectUri
 		});
-		openIdProvider.authenticate(authenticationEndpoint);
+		openIdProvider.authenticate(authenticationEndpoint, IMMEDIATELY_AUTHENTICATE);
 	}
 
 	return{
