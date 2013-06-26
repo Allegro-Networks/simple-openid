@@ -1,5 +1,6 @@
 {
   "name": "simple-openid",
+  "description": "A simple wrapper around openid",
   "version": "0.0.1",
   "private": false,  
   "repository" : { 
