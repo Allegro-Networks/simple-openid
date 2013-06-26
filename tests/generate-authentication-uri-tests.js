@@ -1,7 +1,7 @@
 var assert = require('assert'),
 	OpenIdAuthenticationUriFactory = require('../lib/OpenIdAuthenticationUriFactory');
 
-suite('Authenticate Tests');
+suite('Generate Authentication uri Tests');
 
 test('Creates a new openid provider on each create of openid authentication uri', function(){
 	var relyingPartiesCreated = 0,
