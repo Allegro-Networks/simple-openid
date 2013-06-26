@@ -36,18 +36,19 @@ test('Creates an openId provider with correct authentciation success redirect ur
 	assert.equal(providerAuthenticationSuccessRedirectUri, authenticationSuccessRedirectUri);
 });
 
-test('Authenticates using openid provider connection', function(){
-	var openIdConnectionAuthenticateCalled = false,
+test('Authenticates to openid provider endpoint', function(){
+	var openIdAuthenticationEndpoint,
+		endpoint = "http://jimmy.com/insertHere",
 		mockOpenIdConnection = {
-			authenticate : function(){
-				openIdConnectionAuthenticateCalled = true;
+			authenticate : function(authenticateEndpoint){
+				openIdAuthenticationEndpoint = authenticateEndpoint;
 			}
 		},
 		fakeOpenIdProviderConnectionFactory = new FakeOpenIdProviderConnectionFactory(mockOpenIdConnection);
-	
-	var openIdProvider = new OpenIdProvider(fakeOpenIdProviderConnectionFactory);
+
+	var openIdProvider = new OpenIdProvider(fakeOpenIdProviderConnectionFactory, endpoint);
 	openIdProvider.authenticate({});
-	assert.equal(openIdConnectionAuthenticateCalled,true);
+	assert.equal(openIdAuthenticationEndpoint, endpoint);
 });
 
 var FakeOpenIdProviderConnectionFactory = function(mockOpenIdConnection) {
@@ -63,14 +64,14 @@ var fakeOpenIdProvider = {
 	authenticate: function(){}
 };
 
-var OpenIdProvider = function(openIdProviderFactory){
+var OpenIdProvider = function(openIdProviderFactory,authenticationEndpoint){
 	function authenticate(options){
 		var openIdProvider = openIdProviderFactory.create({
 			authenticationSuccessRedirectUri: options.authenticationSuccessRedirectUri
 		});
-		openIdProvider.authenticate();
+		openIdProvider.authenticate(authenticationEndpoint);
 	}
-	
+
 	return{
 		authenticate: authenticate
 	};
