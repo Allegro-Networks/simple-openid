@@ -1,4 +1,5 @@
-var assert = require('assert');
+var assert = require('assert'),
+	OpenIdAuthenticationUriFactory = require('../src/OpenIdAuthenticationUriFactory');
 
 suite('Authenticate Tests');
 
