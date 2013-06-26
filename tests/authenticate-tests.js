@@ -9,6 +9,7 @@ test('Creates a new openid provider on each authentication attempt', function(){
 		mockOpenIdProviderConnectionFactory = {
 			create : function(){
 				openIdConnectionsCreated++;
+				return fakeOpenIdProvider;
 			}
 		};	
 	var openIdProvider = new OpenIdProvider(mockOpenIdProviderConnectionFactory);
@@ -23,7 +24,8 @@ test('Creates an openId provider with correct authentciation success redirect ur
 		providerAuthenticationSuccessRedirectUri,
 		mockOpenIdProviderConnectionFactory = {
 			create : function(options){
-				providerAuthenticationSuccessRedirectUri = options.authenticationSuccessRedirectUri
+				providerAuthenticationSuccessRedirectUri = options.authenticationSuccessRedirectUri;
+				return fakeOpenIdProvider;
 			}
 		}
 	var openIdProvider = new OpenIdProvider(mockOpenIdProviderConnectionFactory);
@@ -32,16 +34,43 @@ test('Creates an openId provider with correct authentciation success redirect ur
 	});
 
 	assert.equal(providerAuthenticationSuccessRedirectUri, authenticationSuccessRedirectUri);
-})
+});
 
+test('Authenticates using openid provider connection', function(){
+	var openIdConnectionAuthenticateCalled = false,
+		mockOpenIdConnection = {
+			authenticate : function(){
+				openIdConnectionAuthenticateCalled = true;
+			}
+		},
+		fakeOpenIdProviderConnectionFactory = new FakeOpenIdProviderConnectionFactory(mockOpenIdConnection);
+	
+	var openIdProvider = new OpenIdProvider(fakeOpenIdProviderConnectionFactory);
+	openIdProvider.authenticate({});
+	assert.equal(openIdConnectionAuthenticateCalled,true);
+});
 
+var FakeOpenIdProviderConnectionFactory = function(mockOpenIdConnection) {
+	function create(){
+		return mockOpenIdConnection;
+	}
+	return{
+		create: create
+	};
+};
+
+var fakeOpenIdProvider = {
+	authenticate: function(){}
+};
 
 var OpenIdProvider = function(openIdProviderFactory){
 	function authenticate(options){
-		openIdProviderFactory.create({
+		var openIdProvider = openIdProviderFactory.create({
 			authenticationSuccessRedirectUri: options.authenticationSuccessRedirectUri
 		});
+		openIdProvider.authenticate();
 	}
+	
 	return{
 		authenticate: authenticate
 	};
