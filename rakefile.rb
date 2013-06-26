@@ -11,7 +11,7 @@ task :node_dependencies do
 end
 
 task :jshint do
-	sh 'jshint ./tests ./src'
+	sh 'jshint ./tests ./lib'
 end
 
 task :test do 
