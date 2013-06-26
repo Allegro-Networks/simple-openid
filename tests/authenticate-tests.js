@@ -68,6 +68,17 @@ test('Authenticate on relying party not set to immediately',function(){
 	assert.equal(openIdAuthenticatedImmediately,authenticateImmediately);
 });
 
+test('Generation of authentication uri successful, callback triggered with open id authenication uri', function(done){
+	var uri = "http://google.com/openid/auth/etc",
+		fakeRelyingParty = new FakeRelyingParty(uri),
+		fakeRelyingPartyFactory = new FakeRelyingPartyFactory(fakeRelyingParty);
+	var openIdAuthenticationUriFactory = new OpenIdAuthenticationUriFactory(fakeRelyingPartyFactory);
+	openIdAuthenticationUriFactory.create({}, function(openIdAuthenticationUri){		
+		assert.equal(openIdAuthenticationUri, uri);
+		done();
+	});
+});
+
 var FakeRelyingPartyFactory = function(mockOpenIdConnection) {
 	function create(){
 		return mockOpenIdConnection;
@@ -77,17 +88,28 @@ var FakeRelyingPartyFactory = function(mockOpenIdConnection) {
 	};
 };
 
+var FakeRelyingParty = function(returnUri){
+	function authenticate(endpoint, immediate, callback){
+		callback(undefined, returnUri);
+	}
+	return {
+		authenticate : authenticate
+	};
+};
+
 var fakeOpenIdProvider = {
 	authenticate: function(){}
 };
 
 var OpenIdAuthenticationUriFactory = function(relyingPartyFactory){
 	IMMEDIATELY_AUTHENTICATE = false;
-	function create(options){
+	function create(options, callback){
 		var relyingParty = relyingPartyFactory.create({
 			authenticationSuccessRedirectUri: options.authenticationSuccessRedirectUri
 		});
-		relyingParty.authenticate(options.authenticationEndpoint, IMMEDIATELY_AUTHENTICATE);
+		relyingParty.authenticate(options.authenticationEndpoint, IMMEDIATELY_AUTHENTICATE, function(error, openIdAuthenticationUri){
+			callback(openIdAuthenticationUri);
+		});
 	}
 
 	return{
