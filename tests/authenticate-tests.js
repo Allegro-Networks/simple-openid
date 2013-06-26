@@ -13,16 +13,34 @@ test('Creates a new openid provider on each authentication attempt', function(){
 		};	
 	var openIdProvider = new OpenIdProvider(mockOpenIdProviderConnectionFactory);
 	for(authenticationAttemptsCount;authenticationAttemptsCount < authenticationAttempts; authenticationAttemptsCount++){
-		openIdProvider.authenticate();
+		openIdProvider.authenticate({});
 	}
 	assert.equal(openIdConnectionsCreated, authenticationAttempts);
 });
 
+test('Creates an openId provider with correct authentciation success redirect uri', function(){
+	var authenticationSuccessRedirectUri = "http://jimmy.com/here",
+		providerAuthenticationSuccessRedirectUri,
+		mockOpenIdProviderConnectionFactory = {
+			create : function(options){
+				providerAuthenticationSuccessRedirectUri = options.authenticationSuccessRedirectUri
+			}
+		}
+	var openIdProvider = new OpenIdProvider(mockOpenIdProviderConnectionFactory);
+	openIdProvider.authenticate({
+		authenticationSuccessRedirectUri: authenticationSuccessRedirectUri
+	});
+
+	assert.equal(providerAuthenticationSuccessRedirectUri, authenticationSuccessRedirectUri);
+})
+
 
 
 var OpenIdProvider = function(openIdProviderFactory){
-	function authenticate(){
-		openIdProviderFactory.create();
+	function authenticate(options){
+		openIdProviderFactory.create({
+			authenticationSuccessRedirectUri: options.authenticationSuccessRedirectUri
+		});
 	}
 	return{
 		authenticate: authenticate
