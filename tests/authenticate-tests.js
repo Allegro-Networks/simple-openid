@@ -2,41 +2,41 @@ var assert = require('assert');
 
 suite('Authenticate Tests');
 
-test('Creates a new openid provider on each authentication attempt', function(){
-	var openIdConnectionsCreated = 0,
-		authenticationAttempts = 2,
-		authenticationAttemptsCount = 0,
-		mockOpenIdProviderConnectionFactory = {
+test('Creates a new openid provider on each create of openid authentication uri', function(){
+	var relyingPartiesCreated = 0,
+		callsToCreateOpenIdAuthenticationUri = 2,
+		createOpenIdAuthenticationUriCount = 0,
+		mockRelyingPartyFactory = {
 			create : function(){
-				openIdConnectionsCreated++;
+				relyingPartiesCreated++;
 				return fakeOpenIdProvider;
 			}
 		};	
-	var openIdProvider = new OpenIdProvider(mockOpenIdProviderConnectionFactory);
-	for(authenticationAttemptsCount;authenticationAttemptsCount < authenticationAttempts; authenticationAttemptsCount++){
-		openIdProvider.authenticate({});
+	var openIdAuthenticationUriFactory = new OpenIdAuthenticationUriFactory(mockRelyingPartyFactory);
+	for(createOpenIdAuthenticationUriCount;createOpenIdAuthenticationUriCount < callsToCreateOpenIdAuthenticationUri; createOpenIdAuthenticationUriCount++){
+		openIdAuthenticationUriFactory.create({});
 	}
-	assert.equal(openIdConnectionsCreated, authenticationAttempts);
+	assert.equal(relyingPartiesCreated, callsToCreateOpenIdAuthenticationUri);
 });
 
-test('Creates an openId provider with correct authentciation success redirect uri', function(){
+test('Creates a relying party with correct authentication success redirect uri', function(){
 	var authenticationSuccessRedirectUri = "http://jimmy.com/here",
-		providerAuthenticationSuccessRedirectUri,
-		mockOpenIdProviderConnectionFactory = {
+		relyingPartyAuthenticationSuccessRedirectUri,
+		mockRelyingPartyFactory = {
 			create : function(options){
-				providerAuthenticationSuccessRedirectUri = options.authenticationSuccessRedirectUri;
+				relyingPartyAuthenticationSuccessRedirectUri = options.authenticationSuccessRedirectUri;
 				return fakeOpenIdProvider;
 			}
 		};
-	var openIdProvider = new OpenIdProvider(mockOpenIdProviderConnectionFactory);
-	openIdProvider.authenticate({
+	var openIdAuthenticationUriFactory = new OpenIdAuthenticationUriFactory(mockRelyingPartyFactory);
+	openIdAuthenticationUriFactory.create({
 		authenticationSuccessRedirectUri: authenticationSuccessRedirectUri
 	});
 
-	assert.equal(providerAuthenticationSuccessRedirectUri, authenticationSuccessRedirectUri);
+	assert.equal(relyingPartyAuthenticationSuccessRedirectUri, authenticationSuccessRedirectUri);
 });
 
-test('Authenticates to openid provider endpoint', function(){
+test('Authenticate called on relying party with openid provider endpoint', function(){
 	var openIdAuthenticationEndpoint,
 		endpoint = "http://jimmy.com/insertHere",
 		mockOpenIdConnection = {
@@ -44,14 +44,16 @@ test('Authenticates to openid provider endpoint', function(){
 				openIdAuthenticationEndpoint = authenticateEndpoint;
 			}
 		},
-		fakeOpenIdProviderConnectionFactory = new FakeOpenIdProviderConnectionFactory(mockOpenIdConnection);
+		fakeRelyingPartyFactory = new FakeRelyingPartyFactory(mockOpenIdConnection);
 
-	var openIdProvider = new OpenIdProvider(fakeOpenIdProviderConnectionFactory, endpoint);
-	openIdProvider.authenticate({});
+	var openIdAuthenticationUriFactory = new OpenIdAuthenticationUriFactory(fakeRelyingPartyFactory);
+	openIdAuthenticationUriFactory.create({
+		authenticationEndpoint : endpoint
+	});
 	assert.equal(openIdAuthenticationEndpoint, endpoint);
 });
 
-test('Authentication does not take place immediately',function(){
+test('Authenticate on relying party not set to immediately',function(){
 	var openIdAuthenticatedImmediately,
 		authenticateImmediately = false,
 		mockOpenIdConnection ={
@@ -59,14 +61,14 @@ test('Authentication does not take place immediately',function(){
 				openIdAuthenticatedImmediately = authenticateImmediately;
 			}
 		},
-		fakeOpenIdProviderConnectionFactory = new FakeOpenIdProviderConnectionFactory(mockOpenIdConnection);
+		fakeRelyingPartyFactory = new FakeRelyingPartyFactory(mockOpenIdConnection);
 
-	var openIdProvider = new OpenIdProvider(fakeOpenIdProviderConnectionFactory,"");
-	openIdProvider.authenticate({});
+	var openIdAuthenticationUriFactory = new OpenIdAuthenticationUriFactory(fakeRelyingPartyFactory);
+	openIdAuthenticationUriFactory.create({});
 	assert.equal(openIdAuthenticatedImmediately,authenticateImmediately);
 });
 
-var FakeOpenIdProviderConnectionFactory = function(mockOpenIdConnection) {
+var FakeRelyingPartyFactory = function(mockOpenIdConnection) {
 	function create(){
 		return mockOpenIdConnection;
 	}
@@ -79,17 +81,17 @@ var fakeOpenIdProvider = {
 	authenticate: function(){}
 };
 
-var OpenIdProvider = function(openIdProviderFactory,authenticationEndpoint){
+var OpenIdAuthenticationUriFactory = function(relyingPartyFactory){
 	IMMEDIATELY_AUTHENTICATE = false;
-	function authenticate(options){
-		var openIdProvider = openIdProviderFactory.create({
+	function create(options){
+		var relyingParty = relyingPartyFactory.create({
 			authenticationSuccessRedirectUri: options.authenticationSuccessRedirectUri
 		});
-		openIdProvider.authenticate(authenticationEndpoint, IMMEDIATELY_AUTHENTICATE);
+		relyingParty.authenticate(options.authenticationEndpoint, IMMEDIATELY_AUTHENTICATE);
 	}
 
 	return{
-		authenticate: authenticate
+		create: create
 	};
 };
 // module.exports.Bob = function(){
