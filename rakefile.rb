@@ -1,3 +1,4 @@
+
 task :default => [:dependencies, :jshint, :test, :git]
 
 multitask :dependencies => [:node_dependencies, :ruby_dependencies]
@@ -19,6 +20,7 @@ task :test do
 end
 
 task :git => :ruby_dependencies do 
+	require 'rubygems'
 	require 'git_repository'
 	message = ENV['m']
 	raise 'no commit message specified' if message.nil?
