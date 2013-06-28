@@ -1,5 +1,6 @@
+
 var assert = require('assert'),
-	OpenIdAuthenticationUriFactory = require('../lib/OpenIdAuthenticationUriFactory');
+	OpenIdVerification = require('../lib/OpenIdVerification');
 
 suite('Verification Tests: ');
 
@@ -91,27 +92,6 @@ var FakeRelyingPartyFactory = function(relyingParty){
 		create: function(){
 			return relyingParty;
 		}
-	};
-};
-
-var OpenIdVerification = function(relyingPartyFactory){
-	var relyingParty = relyingPartyFactory.create();
-	
-	function checkErrors(errors){
-		if(errors){
-			throw new Error(errors);
-		}
-	}
-
-	function verify(request,callback){
-		relyingParty.verifyAssertation(request,function(errors,result){
-			checkErrors(errors);
-			callback(result);
-		});
-		
-	}
-	return{
-		verify: verify
 	};
 };
 
