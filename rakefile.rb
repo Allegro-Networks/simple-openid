@@ -20,7 +20,7 @@ task :test do
 end
 
 task :git => :ruby_dependencies do 
-	require 'rubygems'
+	require 'bundler/setup'
 	require 'git_repository'
 	message = ENV['m']
 	raise 'no commit message specified' if message.nil?

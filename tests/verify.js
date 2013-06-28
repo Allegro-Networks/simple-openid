@@ -11,7 +11,7 @@ test('When created Then relying party is created',function(){
 			}
 		};
 
-	var jimmy = new Jimmy(mockRelyingPartyFactory);
+	var jimmy = new OpenIdVerification(mockRelyingPartyFactory);
 
 	assert.equal(relyingPartyCreated, true);
 });
@@ -24,7 +24,7 @@ test('When verify Then verifyAssertation is called on openIDConnection',function
 			}
 		},
 		fakeRelyingPartyFactory = new FakeRelyingPartyFactory(mockOpenIdConnection);
-	var jimmy = new Jimmy(fakeRelyingPartyFactory);
+	var jimmy = new OpenIdVerification(fakeRelyingPartyFactory);
 	jimmy.verify(function(){});
 	assert.equal(verifyAssertationCalled,true);
 });
@@ -40,7 +40,7 @@ test('When verify called And no errors occur Then callback method is called',fun
 			}
 		},
 		fakeRelyingPartyFactory = new FakeRelyingPartyFactory(mockOpenIdConnection);
-	var jimmy = new Jimmy(fakeRelyingPartyFactory);
+	var jimmy = new OpenIdVerification(fakeRelyingPartyFactory);
 	jimmy.verify(callback);
 	assert.equal(callbackCalled,true);
 });
@@ -53,7 +53,7 @@ var FakeRelyingPartyFactory = function(openIdConnection){
 	};
 };
 
-var Jimmy = function(relyingPartyFactory){
+var OpenIdVerification = function(relyingPartyFactory){
 	var relyingParty = relyingPartyFactory.create();
 	
 	function verify(callback){
