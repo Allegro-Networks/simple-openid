@@ -3,7 +3,6 @@ var assert = require('assert'),
 	OpenIdVerification = require('../lib/OpenIdVerification');
 
 suite('Verification Tests: ');
-
 test('Request is passed into the relying party',function(){
 	var relyingPartyRequest,
 		request = {},
