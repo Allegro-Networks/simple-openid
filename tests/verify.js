@@ -3,29 +3,32 @@ var assert = require('assert'),
 
 suite('Verification Tests: ');
 
-test('When initialized Then relying party is created',function(){
-	var relyingPartyCreated = false,
-		mockRelyingPartyFactory = {
-			create: function(){
-				relyingPartyCreated = true;
+test('Request is passed into the relying party',function(){
+	var relyingPartyRequest,
+		request = {},
+		mockRelyingParty = {
+			verifyAssertation : function(request,callback){
+				relyingPartyRequest = request;
 			}
-		};
+		},
+		fakeRelyingPartyFactory = new FakeRelyingPartyFactory(mockRelyingParty);
 
-	var jimmy = new OpenIdVerification(mockRelyingPartyFactory);
-
-	assert.equal(relyingPartyCreated, true);
+	var openIdVerification = new OpenIdVerification(fakeRelyingPartyFactory);
+	openIdVerification.verify(request, function(){});
+	assert.equal(request,relyingPartyRequest);
 });
 
-test('Then verifyAssertation is called on openIDConnection',function(){
+test('verifyAssertation is called on relying party',function(){
 	var verifyAssertationCalled = false,
-		mockOpenIdConnection = {
+		mockRelyingParty = {
 			verifyAssertation : function(){
 				verifyAssertationCalled = true;
 			}
 		},
-		fakeRelyingPartyFactory = new FakeRelyingPartyFactory(mockOpenIdConnection);
-	var jimmy = new OpenIdVerification(fakeRelyingPartyFactory);
-	jimmy.verify(null,function(){});
+		fakeRelyingPartyFactory = new FakeRelyingPartyFactory(mockRelyingParty);
+
+	var openIdVerification = new OpenIdVerification(fakeRelyingPartyFactory);
+	openIdVerification.verify(null,function(){});
 	assert.equal(verifyAssertationCalled,true);
 });
 
@@ -34,26 +37,27 @@ test('When no errors occur Then callback method is called',function(){
 		callback = function(){
 			callbackCalled = true;
 		},
-		mockOpenIdConnection = {
+		fakeRelyingParty = {
 			verifyAssertation : function(request,callback){
 				callback(null,{});
 			}
 
 		},
-		fakeRelyingPartyFactory = new FakeRelyingPartyFactory(mockOpenIdConnection);
-	var jimmy = new OpenIdVerification(fakeRelyingPartyFactory);
-	jimmy.verify(null,callback);
+		fakeRelyingPartyFactory = new FakeRelyingPartyFactory(fakeRelyingParty);
+
+	var openIdVerification = new OpenIdVerification(fakeRelyingPartyFactory);
+	openIdVerification.verify(null,callback);
 	assert.equal(callbackCalled,true);
 });
 
 test('When errors occur Then error is thrown',function(){
 	var error = "something bad has happened",
-		mockOpenIdConnection = {
+		fakeRelyingParty = {
 			verifyAssertation : function(request,callback){
 				callback(error,{});
 			}
 		},
-		fakeRelyingPartyFactory = new FakeRelyingPartyFactory(mockOpenIdConnection);
+		fakeRelyingPartyFactory = new FakeRelyingPartyFactory(fakeRelyingParty);
 
 	var openIdVerification = new OpenIdVerification(fakeRelyingPartyFactory);
 	assert.throws(
@@ -64,24 +68,28 @@ test('When errors occur Then error is thrown',function(){
 	);
 });
 
-test('Request is passed into the relying party',function(){
-	var relyingPartyRequest,
-		request = {},
-		mockOpenIdConnection = {
+test('When no errors Then result is passed into the callback',function(){
+	var result = "Hello Jimmy",
+		callbackResult,
+		callback = function(result){
+			callbackResult = result;
+		},
+		fakeRelyingParty = {
 			verifyAssertation : function(request,callback){
-				relyingPartyRequest = request;
+				callback(null,result);
 			}
 		},
-		fakeRelyingPartyFactory = new FakeRelyingPartyFactory(mockOpenIdConnection);
+		fakeRelyingPartyFactory = new FakeRelyingPartyFactory(fakeRelyingParty);
 	var openIdVerification = new OpenIdVerification(fakeRelyingPartyFactory);
-	openIdVerification.verify(request, function(){});
-	assert.equal(request,relyingPartyRequest);
+	openIdVerification.verify(null,callback);
+	assert.equal(result,callbackResult);
 });
 
-var FakeRelyingPartyFactory = function(openIdConnection){
+
+var FakeRelyingPartyFactory = function(relyingParty){
 	return{
 		create: function(){
-			return openIdConnection;
+			return relyingParty;
 		}
 	};
 };
@@ -96,9 +104,9 @@ var OpenIdVerification = function(relyingPartyFactory){
 	}
 
 	function verify(request,callback){
-		relyingParty.verifyAssertation(request,function(errors){
+		relyingParty.verifyAssertation(request,function(errors,result){
 			checkErrors(errors);
-			callback();
+			callback(result);
 		});
 		
 	}
