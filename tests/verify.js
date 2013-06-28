@@ -38,11 +38,29 @@ test('When verify called And no errors occur Then callback method is called',fun
 			verifyAssertation : function(callback){
 				callback(undefined,{});
 			}
+
 		},
 		fakeRelyingPartyFactory = new FakeRelyingPartyFactory(mockOpenIdConnection);
 	var jimmy = new OpenIdVerification(fakeRelyingPartyFactory);
 	jimmy.verify(callback);
 	assert.equal(callbackCalled,true);
+});
+
+test('When verify called And errors occur Then callback method is not called',function(){
+	var callbackCalled = false,
+		callback = function(){
+			callbackCalled = true;
+		},
+		mockOpenIdConnection = {
+			verifyAssertation : function(callback){
+				callback({},{});
+			}
+			
+		},
+		fakeRelyingPartyFactory = new FakeRelyingPartyFactory(mockOpenIdConnection);
+	var jimmy = new OpenIdVerification(fakeRelyingPartyFactory);
+	jimmy.verify(callback);
+	assert.equal(callbackCalled,false);
 });
 
 var FakeRelyingPartyFactory = function(openIdConnection){
