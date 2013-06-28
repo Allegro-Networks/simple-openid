@@ -1,9 +1,9 @@
 var assert = require('assert'),
 	OpenIdAuthenticationUriFactory = require('../lib/OpenIdAuthenticationUriFactory');
 
-suite('Verify');
+suite('Verification Tests: ');
 
-test('When created Then relying party is created',function(){
+test('When initialized Then relying party is created',function(){
 	var relyingPartyCreated = false,
 		mockRelyingPartyFactory = {
 			create: function(){
@@ -16,7 +16,7 @@ test('When created Then relying party is created',function(){
 	assert.equal(relyingPartyCreated, true);
 });
 
-test('When verify Then verifyAssertation is called on openIDConnection',function(){
+test('Then verifyAssertation is called on openIDConnection',function(){
 	var verifyAssertationCalled = false,
 		mockOpenIdConnection = {
 			verifyAssertation : function(){
@@ -29,7 +29,7 @@ test('When verify Then verifyAssertation is called on openIDConnection',function
 	assert.equal(verifyAssertationCalled,true);
 });
 
-test('When verify called And no errors occur Then callback method is called',function(){
+test('When no errors occur Then callback method is called',function(){
 	var callbackCalled = false,
 		callback = function(){
 			callbackCalled = true;
@@ -46,24 +46,25 @@ test('When verify called And no errors occur Then callback method is called',fun
 	assert.equal(callbackCalled,true);
 });
 
-test('When verify called And errors occur Then callback method is not called',function(){
-	var callbackCalled = false,
-		callback = function(){
-			callbackCalled = true;
-		},
+test('When errors occur Then error is thrown',function(){
+	var error = "something bad has happened",
 		mockOpenIdConnection = {
 			verifyAssertation : function(request,callback){
-				callback({},{});
+				callback(error,{});
 			}
-			
 		},
 		fakeRelyingPartyFactory = new FakeRelyingPartyFactory(mockOpenIdConnection);
-	var jimmy = new OpenIdVerification(fakeRelyingPartyFactory);
-	jimmy.verify(null,callback);
-	assert.equal(callbackCalled,false);
+
+	var openIdVerification = new OpenIdVerification(fakeRelyingPartyFactory);
+	assert.throws(
+		function(){
+			openIdVerification.verify(null,function(){});					
+		},
+		/something bad has happened/
+	);
 });
 
-test('When verify called Then request is passed into the relying party',function(){
+test('Request is passed into the relying party',function(){
 	var relyingPartyRequest,
 		request = {},
 		mockOpenIdConnection = {
@@ -88,11 +89,16 @@ var FakeRelyingPartyFactory = function(openIdConnection){
 var OpenIdVerification = function(relyingPartyFactory){
 	var relyingParty = relyingPartyFactory.create();
 	
+	function checkErrors(errors){
+		if(errors){
+			throw new Error(errors);
+		}
+	}
+
 	function verify(request,callback){
 		relyingParty.verifyAssertation(request,function(errors){
-			if(!errors){
-				callback();
-			}
+			checkErrors(errors);
+			callback();
 		});
 		
 	}
