@@ -68,21 +68,20 @@ test('When errors occur Then error is thrown',function(){
 	);
 });
 
-test('When no errors Then result is passed into the callback',function(){
-	var result = "Hello Jimmy",
-		callbackResult,
-		callback = function(result){
-			callbackResult = result;
-		},
+test('When no errors Then id from uri is returned in callback',function(done){
+	var id = 'AItOawltwJJCOgr2XYXqOO2QQnFxfKimc-Z6psw',
+		uri = 'https://www.google.com/accounts/o8/id?id=' + id,		
 		fakeRelyingParty = {
 			verifyAssertation : function(request,callback){
-				callback(null,result);
+				callback(null,uri);
 			}
 		},
 		fakeRelyingPartyFactory = new FakeRelyingPartyFactory(fakeRelyingParty);
 	var openIdVerification = new OpenIdVerification(fakeRelyingPartyFactory);
-	openIdVerification.verify(null,callback);
-	assert.equal(result,callbackResult);
+	openIdVerification.verify(null,function(result){
+		assert.equal(result,id);	
+		done();	
+	});	
 });
 
 
@@ -93,7 +92,3 @@ var FakeRelyingPartyFactory = function(relyingParty){
 		}
 	};
 };
-
-
-
-
