@@ -84,6 +84,22 @@ test('When no errors Then id from uri is returned in callback',function(done){
 	});	
 });
 
+test('When no errors Then id from another uri is returned in callback',function(done){
+	var id = 'AItOawltwJJCOgr2XYXqOO2QQnFxfKimc-Z6psw',
+		uri = 'https://www.twitter.com/accounts/bob?id=' + id,		
+		fakeRelyingParty = {
+			verifyAssertation : function(request,callback){
+				callback(null,uri);
+			}
+		},
+		fakeRelyingPartyFactory = new FakeRelyingPartyFactory(fakeRelyingParty);
+	var openIdVerification = new OpenIdVerification(fakeRelyingPartyFactory);
+	openIdVerification.verify(null,function(result){
+		assert.equal(result,id);	
+		done();	
+	});	
+});
+
 
 var FakeRelyingPartyFactory = function(relyingParty){
 	return{
