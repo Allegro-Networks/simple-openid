@@ -39,7 +39,7 @@ test('When no errors occur Then callback method is called',function(){
 		},
 		fakeRelyingParty = {
 			verifyAssertation : function(request,callback){
-				callback(null,{});
+				callback(null,"");
 			}
 
 		},
@@ -54,7 +54,7 @@ test('When errors occur Then error is thrown',function(){
 	var error = "something bad has happened",
 		fakeRelyingParty = {
 			verifyAssertation : function(request,callback){
-				callback(error,{});
+				callback(error,"");
 			}
 		},
 		fakeRelyingPartyFactory = new FakeRelyingPartyFactory(fakeRelyingParty);
